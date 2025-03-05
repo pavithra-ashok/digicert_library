@@ -1,28 +1,37 @@
 #include <iostream>
-#include "LibraryUtility.hpp"
+#include "LibraryService.hpp"
 #include "FileDataSource.hpp"
 
 namespace Library {
 	namespace Test {
+		/**
+		* @file : MockLibrary
+		* @brief : Shows the ideal,sample workflow using LibraryService
+		*/
 		class MockLibrary {
 		private:
-			LibraryUtility library;
+			LibraryService library;
 		public:
-			MockLibrary(const std::string& file) : library(std::make_unique<FileDataSource>(file)) {}
+			MockLibrary() : library(std::make_unique<FileDataSource>("library_data.txt")) {}
 			void runWorkflow() {
-                Book book1{ 1, "The Great Gatsby", "F. Scott Fitzgerald" };
-                library.addBook(book1);
+				Book book1{ 1, "Sapien", "Yuval Noah Harari" };
+				library.addBook(book1);
 
-                const Book* fetchedBook = library.getBook(1);
-                if (fetchedBook) std::cout << "Retrieved: " << fetchedBook->toString() << std::endl;
+				auto& fetchedBook = library.getBook(1);
+				std::cout << "Retrieved: " << fetchedBook.toString() << std::endl;
+				std::cout << "Retrieve using Author: ";
+				for (const auto& bookRef : library.getBooksByAuthor("Yuval Noah Harari")) {
+					std::cout << bookRef.get().toString() << std::endl;
+				}
+				library.updateBook(1, "name", "Sapiens");
+				std::cout << "Updated and retrieved using name:" << std::endl;
+				for (const auto& bookRef : library.getBooksByName("Sapiens")) {
+					std::cout << bookRef.get().toString() << std::endl;
+				}
+				
 
-                library.updateBook(1, "name", "The Greatest Gatsby");
-
-                std::cout << "All Books After Update:" << std::endl;
-                library.displayAll();
-
-                library.deleteBook(1);
-                std::cout << "All Books After Deletion:" << std::endl;
+				library.deleteBook(1);
+				std::cout << "All Books After Deletion:" << std::endl;
 				library.displayAll();
 			}
 		};

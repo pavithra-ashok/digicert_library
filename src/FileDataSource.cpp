@@ -18,7 +18,7 @@ namespace Library {
         std::string line;
         while (std::getline(file, line)) {
             Book book = Book::fromString(line);
-            books[book.id] = std::make_unique<Book>(book);
+            books[book.id] = book;
         }
         LOG_INFO("Loaded Files successfully");
         file.close();
@@ -27,35 +27,33 @@ namespace Library {
     void FileDataSource::saveToFile() {
         std::ofstream file(filename, std::ios::trunc);
         for (const auto& pair : books) {
-            file << pair.second->toString() << "\n";
+            file << pair.second.toString() << "\n";
         }
         file.close();
         LOG_INFO("Updated data successfully");
     }
 
     void FileDataSource::addBook(const Book& book) {
-        books[book.id] = std::make_unique<Book>(book);
+        books[book.id] = book;
         saveToFile();
         LOG_INFO("Added new Data" + book.toString());
     }
 
-
-
-    const Book* FileDataSource::getBook(BookIdentifier id) const {
+    const Book& FileDataSource::getBook(BookIdentifier id) const {
         auto it = books.find(id);
         if (it != books.end()) {
-            return it->second.get();
+            return it->second;
         }
-        LOG_ERROR("No book found with id: " + id);
-        return nullptr;
+        LOG_ERROR("No book found with id: " + std::to_string(id));
+        throw std::runtime_error("Book not found with ID: " + std::to_string(id));
     }
 
-    std::vector<const Book*> FileDataSource::getBooks(const std::string& fieldName, const std::string& value) const {
-        std::vector<const Book*> matchingBooks;
+    std::vector<std::reference_wrapper<const Book>> FileDataSource::getBooks(const std::string& fieldName, const std::string& value) const {
+        std::vector<std::reference_wrapper<const Book>> matchingBooks;
         for (const auto& pair : books) {
-            if ((fieldName == "name" && pair.second->name == value) ||
-                (fieldName == "author" && pair.second->author == value)) {
-                matchingBooks.push_back(pair.second.get());
+            if ((fieldName == "name" && pair.second.name == value) ||
+                (fieldName == "author" && pair.second.author == value)) {
+                matchingBooks.push_back(std::cref(pair.second));
             }
         }
         if (matchingBooks.empty()) {
@@ -64,22 +62,26 @@ namespace Library {
         return matchingBooks;
     }
 
-    std::vector<const Book*> FileDataSource::getAllBooks() const {
-        std::vector<const Book*> allBooks;
+   
+    std::vector<std::reference_wrapper<const Book>> FileDataSource::getAllBooks() const {
+        std::vector<std::reference_wrapper<const Book>> allBooks;
+        allBooks.reserve(books.size());  
         for (const auto& pair : books) {
-            allBooks.push_back(pair.second.get());
+            allBooks.push_back(std::cref(pair.second)); 
         }
+
         if (allBooks.empty()) {
             LOG_ERROR("No books in datastore");
         }
+
         return allBooks;
     }
 
     void FileDataSource::updateBook(BookIdentifier id, const std::string& fieldName, const std::string& newValue) {
         auto it = books.find(id);
         if (it != books.end()) {
-            if (fieldName == "name") it->second->name = newValue;
-            else if (fieldName == "author") it->second->author = newValue;
+            if (fieldName == "name") it->second.name = newValue;
+            else if (fieldName == "author") it->second.author = newValue;
             saveToFile();
         }
         else {

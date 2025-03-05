@@ -3,21 +3,20 @@ A command-line utility in C++ to simulate a fictional public library
 
 # Functional Requirements
 * Provide ability to:
-	* List all Books � Display all books in the library with relevant details (e.g., title, author, genre, availability).	
-	* Add a Book � Allow users to add a new book.
-	* View Book Details � Retrieve and display detailed information about a specific book.
-	* Update a Book � Modify book details such as title, author, or availability.
-	* Delete a Book � Remove a book from the library database.
+	* List all Books - Display all books in the library with relevant details (e.g., title, author, genre, availability).	
+	* Add a Book - Allow users to add a new book.
+	* View Book Details - Retrieve and display detailed information about a specific book.
+	* Update a Book - Modify book details such as title, author, or availability.
+	* Delete a Book - Remove a book from the library database.
 * Support different storage options (a file or external storage)
 
 # Non-Functional Requirements
-* Performance �Utility needs to be fast and responsive.
-* Scalability � Handle a large number of books efficiently.
-* Reliability � Ensure data consistency and prevent corruption.
-* Usability � Simple command-line interface with intuitive commands.
+* Performance - Utility needs to be fast and responsive.
+* Reliability - Ensure data consistency and prevent corruption.
+* Usability - Simple command-line interface with intuitive commands.
 * Extensibility - Support multi-threading/multi -processing environments in the future. 
-* Maintainability � Modular and well-structured C++ code for future enhancements.
-* Portability � Should run on major operating systems (Windows, Linux, macOS).
+* Maintainability - Modular and well-structured C++ code for future enhancements.
+* Portability - Should run on major operating systems (Windows, Linux, macOS).
 * Testability - Modular code to support testability at various granularity like unit, integration and system tests.
 
 # Open Questions:
@@ -33,7 +32,7 @@ A command-line utility in C++ to simulate a fictional public library
 ## Assumptions
 * Single threaded, Single process environment
 	* The data source would need to handle consistency requirements in multithreaded or multi-process environments.
-	* 
+	* The Logger needs to be updated if this assumption is void.
 
 # Architecture
 ```mermaid
@@ -61,9 +60,11 @@ namespace Library {
     class FileDataSource {
 
     }
-    class LibraryUtility {
+    class LibraryService {
       + addBook()
       + getBook(BookID id)
+      + getBookByName(title)
+      + getBookByAuthor(author)
       + updateBook(BookID id, fieldName, value)
       + deleteBook(BookID id)
     }
@@ -71,7 +72,7 @@ namespace Library {
 }
 DataSource <|-- FileDataSource
 DataSource <|-- RedisDataSource
-LibraryUtility  o-- DataSource
+LibraryService  o-- DataSource
 DataSource *-- "many" Book
 
 namespace Tester {
@@ -86,8 +87,10 @@ namespace Tester {
     }
 }
 InMemoryData --|> DataSource
-MockLibrary *-- LibraryUtility
-MockLibrary .. InMemoryData
+MockLibrary *-- LibraryService
+MockLibrary .. InMemoryDataSource
 TestClient -- MockLibrary
 
 ```
+
+

@@ -10,19 +10,21 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 set(SOURCES
     src/Book.cpp
     src/FileDataSource.cpp
-    src/LibraryUtility.cpp
+    src/LibraryService.cpp
     src/Logger.cpp
 )
 
-# Executable
-add_executable(LibrarySystem ${SOURCES})
+# Library
+add_library(LibraryCore STATIC ${SOURCES})
 
 # Mock Library for testing
 set(TEST_SOURCES
     tests/MockLibrary.cpp
+    tests/TestLibrary.cpp
+    tests/InMemoryDataSource.cpp
     tests/DigicertLibrary.cpp
 )
 
 # Test executable
 add_executable(LibraryTests ${TEST_SOURCES})
-target_link_libraries(LibraryTests PRIVATE LibrarySystem)
+target_link_libraries(LibraryTests PRIVATE LibraryCore)
