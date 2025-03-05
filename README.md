@@ -76,7 +76,7 @@ LibraryService  o-- DataSource
 DataSource *-- "many" Book
 
 namespace Tester {
- class InMemoryData {
+ class InMemoryDataSource {
 
     }
     class MockLibrary {
@@ -86,7 +86,7 @@ namespace Tester {
 
     }
 }
-InMemoryData --|> DataSource
+InMemoryDataSource --|> DataSource
 MockLibrary *-- LibraryService
 MockLibrary .. InMemoryDataSource
 TestClient -- MockLibrary
